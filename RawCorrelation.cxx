@@ -117,7 +117,10 @@ void RawCorrelation(){
   TH2D *proj_sqAntiL = nullptr, *proj_sqL = nullptr, *proj_sqAntip = nullptr, *proj_sqAntid = nullptr;
   TH2D *proj_LantiL = nullptr, *proj_Lantid = nullptr, *proj_antiLantid = nullptr, *proj_antipAntid = nullptr;
   for (int iS{1}; iS < bins::bins[0] + 1; ++iS) {
-    setAxisRanges(nEv, {iS}, {iS});
+    int iSsmallMin = nEv->GetAxis(0)->FindBin(hnAntid_k1.GetAxis(0)->GetBinLowEdge(iS) + constants::epsilon);
+    int iSsmallMax = nEv->GetAxis(0)->FindBin(hnAntid_k1.GetAxis(0)->GetBinUpEdge(iS) - constants::epsilon);
+    std::cout << "(iSsmallMin, iSsmallMax) = (" << iSsmallMin << ", " << iSsmallMax << ")" << "...\n";
+    setAxisRanges(nEv, {iSsmallMin}, {iSsmallMax});
     proj_nev = dynamic_cast<TH1D*>(nEv->Projection(1));
     std::cout << " --- S U B S A M P L E    N . " << iS << " --- \n";
     for (int iC{1}; iC < bins::bins[1] + 1; ++iC) {
@@ -125,7 +128,7 @@ void RawCorrelation(){
       int iCsmallMax = nEv->GetAxis(1)->FindBin(hAntid_k1->GetXaxis()->GetBinUpEdge(iC) - constants::epsilon);
       double nev_tot = proj_nev->Integral(iCsmallMin, iCsmallMax); // number of events in large centrality bin
       std::cout << "nev_tot = " << nev_tot << "\n";
-      std::cout << "Processing centrality " << iC << "...\n";
+      std::cout << "Processing centrality " << iC << ", (iCsmallMin, iCsmallMax) = (" << iCsmallMin << ", " << iCsmallMax << ")" << "...\n";
       for (int iE{1}; iE < bins::bins[2] + 1; ++iE) {
 
         // Centrality bin width correction (CBWC)
@@ -143,21 +146,22 @@ void RawCorrelation(){
         double k11_antipAntid = 0.;
 
         for (int iC_small{iCsmallMin}; iC_small < iCsmallMax + 1; ++iC_small) {
-          double nev = proj_nev->GetBinContent(iC); // number of events in small centrality bin
+          double nev = proj_nev->GetBinContent(iC_small); // number of events in small centrality bin
+          std::cout << "nev_small = " << nev << "\n";
 
           // select axis ranges
-          setAxisRanges(nAntid, {iS, iC_small, iE}, {iS, iC_small, iE});
-          setAxisRanges(nAntip, {iS, iC_small, iE}, {iS, iC_small, iE});
-          setAxisRanges(nAntiL, {iS, iC_small, iE}, {iS, iC_small, iE});
-          setAxisRanges(nL, {iS, iC_small, iE}, {iS, iC_small, iE});
-          setAxisRanges(nSqAntid, {iS, iC_small, iE}, {iS, iC_small, iE});
-          setAxisRanges(nSqAntip, {iS, iC_small, iE}, {iS, iC_small, iE});
-          setAxisRanges(nSqAntiL, {iS, iC_small, iE}, {iS, iC_small, iE});
-          setAxisRanges(nSqL, {iS, iC_small, iE}, {iS, iC_small, iE});
-          setAxisRanges(nLAntiL, {iS, iC_small, iE}, {iS, iC_small, iE});
-          setAxisRanges(nLAntid, {iS, iC_small, iE}, {iS, iC_small, iE});
-          setAxisRanges(nAntiLAntid, {iS, iC_small, iE}, {iS, iC_small, iE});
-          setAxisRanges(nAntipAntid, {iS, iC_small, iE}, {iS, iC_small, iE});
+          setAxisRanges(nAntid, {iSsmallMin, iC_small, iE}, {iSsmallMax, iC_small, iE});
+          setAxisRanges(nAntip, {iSsmallMin, iC_small, iE}, {iSsmallMax, iC_small, iE});
+          setAxisRanges(nAntiL, {iSsmallMin, iC_small, iE}, {iSsmallMax, iC_small, iE});
+          setAxisRanges(nL, {iSsmallMin, iC_small, iE}, {iSsmallMax, iC_small, iE});
+          setAxisRanges(nSqAntid, {iSsmallMin, iC_small, iE}, {iSsmallMax, iC_small, iE});
+          setAxisRanges(nSqAntip, {iSsmallMin, iC_small, iE}, {iSsmallMax, iC_small, iE});
+          setAxisRanges(nSqAntiL, {iSsmallMin, iC_small, iE}, {iSsmallMax, iC_small, iE});
+          setAxisRanges(nSqL, {iSsmallMin, iC_small, iE}, {iSsmallMax, iC_small, iE});
+          setAxisRanges(nLAntiL, {iSsmallMin, iC_small, iE}, {iSsmallMax, iC_small, iE});
+          setAxisRanges(nLAntid, {iSsmallMin, iC_small, iE}, {iSsmallMax, iC_small, iE});
+          setAxisRanges(nAntiLAntid, {iSsmallMin, iC_small, iE}, {iSsmallMax, iC_small, iE});
+          setAxisRanges(nAntipAntid, {iSsmallMin, iC_small, iE}, {iSsmallMax, iC_small, iE});
 
           double sum_antip = 0.;
           double sumSq_antip = 0.;
@@ -174,24 +178,24 @@ void RawCorrelation(){
 
           // project on pT axes
           proj_antid = dynamic_cast<TH1D*>(nAntid->Projection(3));
-          proj_sqAntid = dynamic_cast<TH2D*>(nSqAntid->Projection(3, 4));
+          proj_sqAntid = dynamic_cast<TH2D*>(nSqAntid->Projection(4, 3));
           proj_antip = dynamic_cast<TH1D*>(nAntip->Projection(3));
-          proj_sqAntip = dynamic_cast<TH2D*>(nSqAntip->Projection(3, 4));
+          proj_sqAntip = dynamic_cast<TH2D*>(nSqAntip->Projection(4, 3));
           proj_antiL = dynamic_cast<TH1D*>(nAntiL->Projection(3));
-          proj_sqAntiL = dynamic_cast<TH2D*>(nSqAntiL->Projection(3, 4));
+          proj_sqAntiL = dynamic_cast<TH2D*>(nSqAntiL->Projection(4, 3));
           proj_L = dynamic_cast<TH1D*>(nL->Projection(3));
-          proj_sqL = dynamic_cast<TH2D*>(nSqL->Projection(3, 4));
-          proj_LantiL = dynamic_cast<TH2D*>(nLAntiL->Projection(3, 4));
-          proj_Lantid = dynamic_cast<TH2D*>(nLAntid->Projection(3, 4));
-          proj_antiLantid = dynamic_cast<TH2D*>(nAntiLAntid->Projection(3, 4));
-          proj_antipAntid = dynamic_cast<TH2D*>(nAntipAntid->Projection(3, 4));
+          proj_sqL = dynamic_cast<TH2D*>(nSqL->Projection(4, 3));
+          proj_LantiL = dynamic_cast<TH2D*>(nLAntiL->Projection(4, 3));
+          proj_Lantid = dynamic_cast<TH2D*>(nLAntid->Projection(4, 3));
+          proj_antiLantid = dynamic_cast<TH2D*>(nAntiLAntid->Projection(4, 3));
+          proj_antipAntid = dynamic_cast<TH2D*>(nAntipAntid->Projection(4, 3));
 
-          for (int iPL{1}; iPL < proj_antiL->GetNbinsX() + 1; ++iPL) { // loop over pT bins (lambda)
+          for (int iPL{1}; iPL < /*proj_antiL->GetNbinsX()*/15 + 1; ++iPL) { // loop over pT bins (lambda)
             double n_L = proj_L->GetBinContent(iPL);
             double n_antiL = proj_antiL->GetBinContent(iPL);
             sum_L += n_L;
             sum_antiL += n_antiL;
-            for (int iPL2{1}; iPL2 < proj_antiL->GetNbinsX() + 1; ++iPL2) { // loop over pT bins (lambda, 2)
+            for (int iPL2{1}; iPL2 < /*proj_antiL->GetNbinsX()*/15 + 1; ++iPL2) { // loop over pT bins (lambda, 2)
               double nsq_L = proj_sqL->GetBinContent(iPL, iPL2);
               double nsq_antiL = proj_sqAntiL->GetBinContent(iPL, iPL2);
               double n_LantiL = proj_LantiL->GetBinContent(iPL, iPL2);
@@ -229,18 +233,18 @@ void RawCorrelation(){
           }
 
           if (nev > 1.e-5) {
-            k1_L += sum_L;
-            k2_L += sumSq_L - std::pow(sum_L, 2.) / nev;
-            k1_antiL += sum_antiL;
-            k2_antiL += sumSq_antiL - std::pow(sum_antiL, 2.) / nev;
-            k1_antid += sum_antid;
-            k2_antid += sumSq_antid - std::pow(sum_antid, 2.) / nev;
-            k1_antip += sum_antip;
-            k2_antip += sumSq_antip - std::pow(sum_antip, 2.) / nev;
-            k11_LantiL += sum_LantiL - sum_L * sum_antiL / nev;
-            k11_Lantid += sum_Lantid - sum_L * sum_antid / nev;
-            k11_antiLantid += sum_antiLantid - sum_antiL * sum_antid / nev;
-            k11_antipAntid += sum_antipAntid - sum_antip * sum_antid / nev;
+            k1_L += (sum_L);
+            k2_L += (sumSq_L - std::pow(sum_L, 2.) / nev);
+            k1_antiL += (sum_antiL);
+            k2_antiL += (sumSq_antiL - std::pow(sum_antiL, 2.) / nev);
+            k1_antid += (sum_antid);
+            k2_antid += (sumSq_antid - std::pow(sum_antid, 2.) / nev);
+            k1_antip += (sum_antip);
+            k2_antip += (sumSq_antip - std::pow(sum_antip, 2.) / nev);
+            k11_LantiL += (sum_LantiL - sum_L * sum_antiL / nev);
+            k11_Lantid += (sum_Lantid - sum_L * sum_antid / nev);
+            k11_antiLantid += (sum_antiLantid - sum_antiL * sum_antid / nev);
+            k11_antipAntid += (sum_antipAntid - sum_antip * sum_antid / nev);
 
             // std::cout << "k1_L = " << k1_L << "\n";
           }
@@ -273,7 +277,7 @@ void RawCorrelation(){
           k11_antiLantid /= nev_tot;
           k11_antipAntid /= nev_tot;
 
-          std::cout << "k1_L = " << k1_L << ", k11_Lantid = " << k11_Lantid << ", k11_antiLantid = " << k11_antiLantid << "\n";
+          std::cout << k1_L << ", k11_Lantid = " << k11_Lantid << ", k11_antiLantid = " << k11_antiLantid << "\n";
 
           // std::cout << "k11_antiLantid = " << k11_antiLantid << ", k2_antiL * k2_antid = " << k2_antiL * k2_antid << std::endl;
           // std::cout << "k11_Lantid = " << k11_Lantid << ", k2_L * k2_antid = " << k2_L * k2_antid << std::endl;
