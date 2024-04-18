@@ -10,7 +10,7 @@ void subsample(THnSparse *nPart, TH1D *hOut){
   auto nCent = nPart->GetAxis(1)->GetNbins();
   for (int iC{1}; iC < nCent + 1; ++iC) {
     for (int iS{0}; iS < nSubsamples; ++iS) {
-      auto binc = nPart->GetBinContent((int[]){iS + 1, iC, 4});
+      auto binc = nPart->GetBinContent((int[]){iS + 1, iC, 1});
       auto binc_prev = hOut->GetBinContent(iC);
       auto bine_prev = hOut->GetBinError(iC);
       std::cout << binc << std::endl;
@@ -42,6 +42,15 @@ void setAxisRanges(THnSparse* h, std::initializer_list<int> const xmin, std::ini
 void RawCorrelation(){
   auto f = TFile::Open(fileIO::inFileName.data());
   auto of = TFile::Open(fileIO::outFileName.data(), "recreate");
+  auto file_effd = TFile::Open("efficiencyd.root");
+  auto file_effL = TFile::Open("efficiencyL.root");
+  auto file_effp = TFile::Open("efficiencyp.root");
+  auto effd = (TH1D*)file_effd->Get("eff_1");
+  effd->SetName("effd");
+  auto effL = (TH1D*)file_effL->Get("eff_1");
+  effL->SetName("effL");
+  auto effp = (TH1D*)file_effp->Get("eff_1");
+  effp->SetName("effp");
   auto nEv = dynamic_cast<THnSparse*>(f->Get("antid-lambda-ebye/nEv"));
   auto nAntid = dynamic_cast<THnSparse*>(f->Get("antid-lambda-ebye/nAntid"));
   auto nAntip = dynamic_cast<THnSparse*>(f->Get("antid-lambda-ebye/nAntip"));
@@ -164,12 +173,16 @@ void RawCorrelation(){
           setAxisRanges(nAntipAntid, {iSsmallMin, iC_small, iE}, {iSsmallMax, iC_small, iE});
 
           double sum_antip = 0.;
+          double sum_antip_2 = 0.;
           double sumSq_antip = 0.;
           double sum_antid = 0.;
+          double sum_antid_2 = 0.;
           double sumSq_antid = 0.;
           double sum_antiL = 0.;
+          double sum_antiL_2 = 0.;
           double sumSq_antiL = 0.;
           double sum_L = 0.;
+          double sum_L_2 = 0.;
           double sumSq_L = 0.;
           double sum_LantiL = 0.;
           double sum_Lantid = 0.;
@@ -190,57 +203,72 @@ void RawCorrelation(){
           proj_antiLantid = dynamic_cast<TH2D*>(nAntiLAntid->Projection(4, 3));
           proj_antipAntid = dynamic_cast<TH2D*>(nAntipAntid->Projection(4, 3));
 
-          for (int iPL{1}; iPL < /*proj_antiL->GetNbinsX()*/15 + 1; ++iPL) { // loop over pT bins (lambda)
+          for (int iPL{6}; iPL < proj_antiL->GetNbinsX() + 1; ++iPL) { // loop over pT bins (lambda)
             double n_L = proj_L->GetBinContent(iPL);
             double n_antiL = proj_antiL->GetBinContent(iPL);
-            sum_L += n_L;
-            sum_antiL += n_antiL;
-            for (int iPL2{1}; iPL2 < /*proj_antiL->GetNbinsX()*/15 + 1; ++iPL2) { // loop over pT bins (lambda, 2)
+            double effL_pt = effL->GetBinContent(iPL);
+            double effAntiL_pt = effL->GetBinContent(iPL); // TODO: apply charge-conjugate efficiencies
+            sum_L += (n_L / effL_pt);
+            sum_antiL += (n_antiL / effAntiL_pt);
+            sum_L_2 += (n_L / std::pow(effL_pt, 2.));
+            sum_antiL_2 += (n_antiL / std::pow(effL_pt, 2.));
+            for (int iPL2{6}; iPL2 < proj_antiL->GetNbinsX() + 1; ++iPL2) { // loop over pT bins (lambda, 2)
               double nsq_L = proj_sqL->GetBinContent(iPL, iPL2);
               double nsq_antiL = proj_sqAntiL->GetBinContent(iPL, iPL2);
+              double effL_pt2 = effL->GetBinContent(iPL2); // TODO: apply charge-conjugate efficiencies
+              double effAntiL_pt2 = effL->GetBinContent(iPL2); // TODO: apply charge-conjugate efficiencies
               double n_LantiL = proj_LantiL->GetBinContent(iPL, iPL2);
-              sumSq_L += nsq_L;
-              sumSq_antiL += nsq_antiL;
-              sum_LantiL += n_LantiL;
+              sumSq_L += (nsq_L / effL_pt / effL_pt2);
+              sumSq_antiL += (nsq_antiL / effAntiL_pt / effAntiL_pt2);
+              sum_LantiL += (n_LantiL / effL_pt / effAntiL_pt2);
             }
-            for (int iPD{1}; iPD < proj_antid->GetNbinsX() + 1; ++iPD) { // loop over pT bins (deuteron)
+            for (int iPD{2}; iPD < proj_antid->GetNbinsX() + 1; ++iPD) { // loop over pT bins (deuteron)
               double n_Lantid = proj_Lantid->GetBinContent(iPL, iPD);
+              double effd_pt = effd->GetBinContent(iPD);
               double n_antiLantid = proj_antiLantid->GetBinContent(iPL, iPD);
               // std::cout << "n_antiLantid = " << n_antiLantid << std::endl;
-              sum_Lantid += n_Lantid;
-              sum_antiLantid += n_antiLantid;
+              sum_Lantid += (n_Lantid / effL_pt / effd_pt);
+              sum_antiLantid += (n_antiLantid / effAntiL_pt / effd_pt);
             }
           }
-          for (int iPD{1}; iPD < proj_antid->GetNbinsX() + 1; ++iPD) { // loop over pT bins (deuteron)
+          for (int iPD{2}; iPD < proj_antid->GetNbinsX() + 1; ++iPD) { // loop over pT bins (deuteron)
             double n_antid = proj_antid->GetBinContent(iPD);
-            sum_antid += n_antid;
-            for (int iPD2{1}; iPD2 < proj_antid->GetNbinsX() + 1; ++iPD2) { // loop over pT bins (deuteron, 2)
+            double effd_pt = effd->GetBinContent(iPD);
+            sum_antid += (n_antid / effd_pt);
+            sum_antid_2 += (n_antid / std::pow(effd_pt, 2.));
+            for (int iPD2{2}; iPD2 < proj_antid->GetNbinsX() + 1; ++iPD2) { // loop over pT bins (deuteron, 2)
               double nsq_antid = proj_sqAntid->GetBinContent(iPD, iPD2);
-              sumSq_antid += nsq_antid;
+              double effd_pt2 = effd->GetBinContent(iPD2);
+              sumSq_antid += (nsq_antid / effd_pt / effd_pt2);
             }
           }
-          for (int iPP{1}; iPP < proj_antid->GetNbinsX() + 1; ++iPP) { // loop over pT bins (proton)
+          for (int iPP{1}; iPP < proj_antip->GetNbinsX() + 1; ++iPP) { // loop over pT bins (proton)
             double n_antip = proj_antip->GetBinContent(iPP);
-            sum_antip += n_antip;
+            double effp_pt = effp->GetBinContent(iPP);
+            sum_antip += (n_antip / effp_pt);
+            sum_antip_2 += (n_antip / std::pow(effp_pt, 2.));
+            // std::cout << "eff_pt = " << effp_pt << std::endl;
             for (int iPP2{1}; iPP2 < proj_antip->GetNbinsX() + 1; ++iPP2) { // loop over pT bins (proton, 2)
               double nsq_antip = proj_sqAntip->GetBinContent(iPP, iPP2);
-              sumSq_antip += nsq_antip;
+              double effp_pt2 = effp->GetBinContent(iPP2);
+              sumSq_antip += (nsq_antip / effp_pt2 / effp_pt);
             }
-            for (int iPD2{1}; iPD2 < proj_antid->GetNbinsX() + 1; ++iPD2) { // loop over pT bins (deuteron, 2)
+            for (int iPD2{2}; iPD2 < proj_antid->GetNbinsX() + 1; ++iPD2) { // loop over pT bins (deuteron, 2)
               double n_antipAntid = proj_antipAntid->GetBinContent(iPP, iPD2);
-              sum_antipAntid += n_antipAntid;
+              double effd_pt2 = effd->GetBinContent(iPD2);
+              sum_antipAntid += (n_antipAntid / effd_pt2 / effp_pt);
             }
           }
 
           if (nev > 1.e-5) {
             k1_L += (sum_L);
-            k2_L += (sumSq_L - std::pow(sum_L, 2.) / nev);
+            k2_L += (sumSq_L - std::pow(sum_L, 2.) / nev + sum_L - sum_L_2);
             k1_antiL += (sum_antiL);
-            k2_antiL += (sumSq_antiL - std::pow(sum_antiL, 2.) / nev);
+            k2_antiL += (sumSq_antiL - std::pow(sum_antiL, 2.) / nev + sum_antiL - sum_antiL_2);
             k1_antid += (sum_antid);
-            k2_antid += (sumSq_antid - std::pow(sum_antid, 2.) / nev);
+            k2_antid += (sumSq_antid - std::pow(sum_antid, 2.) / nev + sum_antid - sum_antid_2);
             k1_antip += (sum_antip);
-            k2_antip += (sumSq_antip - std::pow(sum_antip, 2.) / nev);
+            k2_antip += (sumSq_antip - std::pow(sum_antip, 2.) / nev + sum_antip - sum_antip_2);
             k11_LantiL += (sum_LantiL - sum_L * sum_antiL / nev);
             k11_Lantid += (sum_Lantid - sum_L * sum_antid / nev);
             k11_antiLantid += (sum_antiLantid - sum_antiL * sum_antid / nev);
