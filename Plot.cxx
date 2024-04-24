@@ -6,10 +6,10 @@ void SetOptCanv(TCanvas &cc){
   cc.SetTopMargin(0.05);
 }
 
-constexpr const char* period = "18qr";
+constexpr const char* period = "15o";
 
 void Plot(){
-  TFile* f = TFile::Open(Form("out_run2_%s_05042024.root", period));
+  TFile* f = TFile::Open(Form("out_run2_LHC%s_20240420_noEff.root", period));
   gStyle->SetOptStat(0);
 
   // correlations
@@ -30,6 +30,7 @@ void Plot(){
   hsame->GetFunction("pol0")->SetLineColor(kBlue);
   hsame->GetFunction("pol0")->SetLineColor(kRed);
   hsame->GetYaxis()->SetRangeUser(-0.0015, 0.0015);
+  hsame->GetXaxis()->SetRangeUser(0., 80.);
   c.Print(Form("cSameOpp_%s.pdf", period));
 
   // antid-antip
@@ -40,6 +41,7 @@ void Plot(){
   cAntipAntid.cd();
   hAntipAntid->Fit("pol0");
   hAntipAntid->Draw("pe");
+  hAntipAntid->GetXaxis()->SetRangeUser(0., 80.);
   cAntipAntid.Print(Form("cAntipAntid_%s.pdf", period));
 
   // antid-netL
@@ -50,6 +52,8 @@ void Plot(){
   SetOptCanv(cNetLantid);
   cNetLantid.cd();
   hAntidNetL->GetYaxis()->SetTitleOffset(1.6);
+  hAntidNetL->GetYaxis()->SetRangeUser(-0.001, 0.002);
+  hAntidNetL->GetXaxis()->SetRangeUser(0., 80.);
   //hAntidNetL->Fit("pol0");
   hAntidNetL->Draw("pe");
   cNetLantid.Print(Form("cNetLantid_%s.pdf", period));
@@ -63,6 +67,7 @@ void Plot(){
   hL->GetYaxis()->SetTitle("#kappa_{2}/#kappa_{1}(#Lambda)");
   hL->Draw("pe");
   hL->GetYaxis()->SetRangeUser(0.99, 1.01);
+  hL->GetXaxis()->SetRangeUser(0., 80.);
   cL.Print(Form("cLk2k1_%s.pdf", period));
 
   TH1D* hAntiL = (TH1D*)f->Get("hAntiL_k2k1");
@@ -73,6 +78,7 @@ void Plot(){
   hAntiL->GetYaxis()->SetTitle("#kappa_{2}/#kappa_{1}(#bar{#Lambda})");
   hAntiL->Draw("pe");
   hAntiL->GetYaxis()->SetRangeUser(0.99, 1.01);
+  hAntiL->GetXaxis()->SetRangeUser(0., 80.);
   cAntiL.Print(Form("cAntiLk2k1_%s.pdf", period));
 
   TH1D* hNetL = (TH1D*)f->Get("hNetL_k2k1");
@@ -84,7 +90,8 @@ void Plot(){
   cNetL.cd();
   hNetL->GetYaxis()->SetTitle("#kappa_{2}/#kappa_{1}(#Delta#Lambda)");
   hNetL->Draw("pe");
-  hNetL->GetYaxis()->SetRangeUser(0.99, 1.01);
+  hNetL->GetYaxis()->SetRangeUser(0.99, 1.001);
+  hNetL->GetXaxis()->SetRangeUser(0., 80.);
   cNetL.Print(Form("cNetLk2k1_%s.pdf", period));
 
   TH1D* hAntip = (TH1D*)f->Get("hAntip_k2k1");
@@ -95,6 +102,7 @@ void Plot(){
   hAntip->GetYaxis()->SetTitle("#kappa_{2}/#kappa_{1}(#bar{p})");
   hAntip->Draw("pe");
   hAntip->GetYaxis()->SetRangeUser(0.99, 1.01);
+  hAntip->GetXaxis()->SetRangeUser(0., 80.);
   cAntip.Print(Form("cAntipk2k1_%s.pdf", period));
 
   TH1D* hAntid = (TH1D*)f->Get("hAntid_k2k1");
@@ -105,6 +113,7 @@ void Plot(){
   hAntid->SetLineWidth(2);
   cAntid.cd();
   hAntid->GetYaxis()->SetTitle("#kappa_{2}/#kappa_{1}(#bar{d})");
+  hAntid->GetXaxis()->SetRangeUser(0., 80.);
   hAntid->Draw("pe");
   hAntid->GetYaxis()->SetRangeUser(0.99, 1.01);
   cAntid.Print(Form("cAntidk2k1_%s.pdf", period));

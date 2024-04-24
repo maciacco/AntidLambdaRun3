@@ -25,7 +25,8 @@ void SetHistStyle(TH1 *h)
 }
 
 constexpr double invMassCut = 0.004;
-constexpr double nSigmaTPCCut = 2.;
+constexpr double nSigmaTPCCutLow = -2.;
+constexpr double nSigmaTPCCut = 4.;
 constexpr double massTOFCut = .1;
 constexpr bool kLambda = true;
 constexpr bool kDeuteron = true;
@@ -35,7 +36,7 @@ int colors[] = {TColor::GetColor("#ff3300"), TColor::GetColor("#ec6e0a"), TColor
 void Purity()
 {
   gStyle->SetOptStat(0);
-  auto _file0 = TFile::Open("AnalysisResults_LHC15o_13042024.root");
+  auto _file0 = TFile::Open("AnalysisResults_LHC15o_20240420.root");
   auto fileOut = TFile::Open("purity.root", "recreate");
   if (kLambda)
   {
@@ -48,7 +49,7 @@ void Purity()
     for (int iC{1}; iC < 10; ++iC)
     {
       res[iC - 1] = new TH1D(Form("res_%d", iC), ";#it{p}_{T} (GeV/#it{c});Purity", 15, 0., 3.);
-      for (int iP{4}; iP <= 15; ++iP)
+      for (int iP{1}; iP <= 10; ++iP)
       {
         auto proj = (TH1F *)hMass->ProjectionZ(Form("mass_%.1f_%.1f", hMass->GetYaxis()->GetBinLowEdge(iP), hMass->GetYaxis()->GetBinUpEdge(iP)), iC, iC, iP, iP);
         proj->SetTitle(";#it{M}(p + #pi^{-}) (GeV/#it{c});Entries");
@@ -185,7 +186,7 @@ void Purity()
         proj->Draw("pe");
         f.SetLineWidth(3);
         f.Draw("same");
-        TLine ll(-nSigmaTPCCut, 0, -nSigmaTPCCut, proj->GetBinContent(proj->GetMaximumBin()) * 0.6);
+        TLine ll(-nSigmaTPCCutLow, 0, -nSigmaTPCCutLow, proj->GetBinContent(proj->GetMaximumBin()) * 0.6);
         TLine lr(nSigmaTPCCut, 0, nSigmaTPCCut, proj->GetBinContent(proj->GetMaximumBin()) * 0.6);
         ll.SetLineStyle(kDashed);
         lr.SetLineStyle(kDashed);
