@@ -6,16 +6,26 @@ void SetOptCanv(TCanvas &cc){
   cc.SetTopMargin(0.05);
 }
 
-constexpr const char* period = "15o";
+constexpr const char* period = "15o18qr";
 
 void FinalPlotsWithModels(){
   gStyle->SetOptStat(0);
-  TFile* f = TFile::Open(Form("out_run2_LHC%s_20240420.root", period));
+  TFile* f = TFile::Open(Form("_out_run2_LHC%s_20240426_eff_newPtBins.root", period));
   TFile* f16 = TFile::Open("out_full_analysis_antid_antip_ptL_1_4_16.root");
   TFile* f30 = TFile::Open("out_full_analysis_antid_antip_ptL_1_4_30.root");
+  TFile* fSys = TFile::Open("outSys_newPtBins.root");
 
   // antid-netL
   TH1D* hAntidNetL = (TH1D*)f->Get("hAntidNetL");
+  auto hsys = (TH1D*)fSys->Get("sysTot");
+  TGraphErrors gSys;
+  for (int i{1}; i < 9; ++i) {
+    gSys.AddPoint(hAntidNetL->GetBinCenter(i), hAntidNetL->GetBinContent(i));
+    gSys.SetPointError(gSys.GetN() - 1, 2., hsys->GetBinContent(i));
+  }
+  gSys.SetLineWidth(2);
+  gSys.SetFillStyle(0);
+  gSys.SetLineColor(kRed);
   auto hCpy(*hAntidNetL);
   hCpy.Reset();
   hCpy.SetLineStyle(kDashed);
@@ -38,6 +48,7 @@ void FinalPlotsWithModels(){
   model_16_rho->SetFillColor(kAzure + 7);
   model_30_rho->Draw("e3same");
   model_16_rho->Draw("e3same");
+  gSys.Draw("e5same");
   hAntidNetL->Draw("pesame");
   TLatex t;
   t.SetTextFont(44);

@@ -24,10 +24,10 @@ void SetHistStyle(TH1 *h)
   h->SetLineWidth(2);
 }
 
-constexpr double invMassCut = 0.004;
-constexpr double nSigmaTPCCutLow = -2.;
-constexpr double nSigmaTPCCut = 4.;
-constexpr double massTOFCut = .1;
+constexpr double invMassCut = 0.0025;
+constexpr double nSigmaTPCCutLow = 2.;
+constexpr double nSigmaTPCCut = 2.;
+constexpr double massTOFCut = .085;
 constexpr bool kLambda = true;
 constexpr bool kDeuteron = true;
 
@@ -36,20 +36,21 @@ int colors[] = {TColor::GetColor("#ff3300"), TColor::GetColor("#ec6e0a"), TColor
 void Purity()
 {
   gStyle->SetOptStat(0);
-  auto _file0 = TFile::Open("AnalysisResults_LHC15o_20240420.root");
+  auto _file0 = TFile::Open("./AnalysisResultsLHC15oGridJob.root");
   auto fileOut = TFile::Open("purity.root", "recreate");
   if (kLambda)
   {
     auto hMass = (TH3F *)_file0->Get("antid-lambda-ebye/QA/massLambda");
     hMass->RebinX(10);
-    hMass->RebinY(4);
+    hMass->RebinY(2);
+    hMass->RebinZ(2);
     TCanvas ctot("PurityLambda", "purityLambda", 600, 600);
     TH1D *res[9]{nullptr};
     TLegend leg(0.3, 0.2, 0.7, 0.5);
     for (int iC{1}; iC < 10; ++iC)
     {
-      res[iC - 1] = new TH1D(Form("res_%d", iC), ";#it{p}_{T} (GeV/#it{c});Purity", 15, 0., 3.);
-      for (int iP{1}; iP <= 10; ++iP)
+      res[iC - 1] = new TH1D(Form("res_%d", iC), ";#it{p}_{T} (GeV/#it{c});Purity", 20, 0., 4.);
+      for (int iP{6}; iP <= 20; ++iP)
       {
         auto proj = (TH1F *)hMass->ProjectionZ(Form("mass_%.1f_%.1f", hMass->GetYaxis()->GetBinLowEdge(iP), hMass->GetYaxis()->GetBinUpEdge(iP)), iC, iC, iP, iP);
         proj->SetTitle(";#it{M}(p + #pi^{-}) (GeV/#it{c});Entries");
@@ -134,18 +135,18 @@ void Purity()
     auto nSigmaTPC = (TH3F *)_file0->Get("antid-lambda-ebye/QA/tpcNsigmaGlo_d");
     auto massTOF = (TH3F *)_file0->Get("antid-lambda-ebye/QA/tofMass_d");
     nSigmaTPC->RebinX(10);
-    nSigmaTPC->RebinY(4);
+    //nSigmaTPC->RebinY(4);
     nSigmaTPC->RebinZ(2);
     massTOF->RebinX(10);
-    massTOF->RebinY(4);
+    //massTOF->RebinY(4);
     massTOF->RebinZ(2);
     TCanvas ctot("PurityAntideuteron", "purityAntideuteron", 600, 600);
     TH1D *res[10]{nullptr};
     TLegend leg(0.3, 0.2, 0.7, 0.5);
     for (int iC{1}; iC < 10; ++iC)
     {
-      res[iC - 1] = new TH1D(Form("res_%d", iC), ";#it{p}_{T} (GeV/#it{c});Purity", 10, 0., 2.);
-      for (int iP{5}; iP < 6; ++iP)
+      res[iC - 1] = new TH1D(Form("res_%d", iC), ";#it{p}_{T} (GeV/#it{c});Purity", 20, 0., 2.);
+      for (int iP{7}; iP < 11; ++iP)
       {
         auto proj = (TH1F *)nSigmaTPC->ProjectionZ(Form("nSigmaTpc_%.1f_%.1f", nSigmaTPC->GetYaxis()->GetBinLowEdge(iP), nSigmaTPC->GetYaxis()->GetBinUpEdge(iP)), iC, iC, iP, iP);
         proj->SetTitle(";n#sigma_{TPC};Entries");
@@ -202,7 +203,7 @@ void Purity()
         c.Write();
         c.Print(Form("plots/AntideuteronPurity_cent%d_pt_%.1f_%.1f.pdf", iC, nSigmaTPC->GetYaxis()->GetBinLowEdge(iP), nSigmaTPC->GetYaxis()->GetBinUpEdge(iP)));
       }
-      for (int iP{6}; iP <= 9; ++iP)
+      for (int iP{11}; iP <= 18; ++iP)
       {
         auto proj = (TH1F *)massTOF->ProjectionZ(Form("massTOF_%.1f_%.1f", massTOF->GetYaxis()->GetBinLowEdge(iP), massTOF->GetYaxis()->GetBinUpEdge(iP)), iC, iC, iP, iP);
         proj->SetTitle(";#it{M}_{TOF} (GeV/#it{c}^{2});Entries");

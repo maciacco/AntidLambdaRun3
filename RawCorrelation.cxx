@@ -1,6 +1,11 @@
 #include <TFile.h>
 #include <THnSparse.h>
 #include <TH1D.h>
+#include <TColor.h>
+#include <TStyle.h>
+#include <TH3F.h>
+#include <TH2F.h>
+#include <Riostream.h>
 
 #include "Constants.h"
 
@@ -10,7 +15,8 @@ void subsample(THnSparse *nPart, TH1D *hOut){
   auto nCent = nPart->GetAxis(1)->GetNbins();
   for (int iC{1}; iC < nCent + 1; ++iC) {
     for (int iS{0}; iS < nSubsamples; ++iS) {
-      auto binc = nPart->GetBinContent((int[]){iS + 1, iC, 1});
+      int idx2[]{iS + 1, iC, 1};
+      auto binc = nPart->GetBinContent(idx2);
       auto binc_prev = hOut->GetBinContent(iC);
       auto bine_prev = hOut->GetBinError(iC);
       std::cout << binc << std::endl;
@@ -39,25 +45,24 @@ void setAxisRanges(THnSparse* h, std::initializer_list<int> const xmin, std::ini
   }
 }
 
-void RawCorrelation(){
+void RawCorrelation(const int cut = 0){
+  const char* cutSet = cutSets[cut];
   auto f = TFile::Open(fileIO::inFileName.data());
-  auto of = TFile::Open(fileIO::outFileName.data(), "recreate");
-  auto file_effd = TFile::Open("efficiencyD.root");
-  auto file_effL = TFile::Open("efficiencyL.root");
-  auto file_effp = TFile::Open("efficiencyP.root");
-  auto nEv = dynamic_cast<THnSparse*>(f->Get("antid-lambda-ebye/nEv"));
-  auto nAntid = dynamic_cast<THnSparse*>(f->Get("antid-lambda-ebye/nAntid"));
-  auto nAntip = dynamic_cast<THnSparse*>(f->Get("antid-lambda-ebye/nAntip"));
-  auto nAntiL = dynamic_cast<THnSparse*>(f->Get("antid-lambda-ebye/nAntiL"));
-  auto nL = dynamic_cast<THnSparse*>(f->Get("antid-lambda-ebye/nL"));
-  auto nSqAntid = dynamic_cast<THnSparse*>(f->Get("antid-lambda-ebye/nSqAntid"));
-  auto nSqAntip = dynamic_cast<THnSparse*>(f->Get("antid-lambda-ebye/nSqAntip"));
-  auto nSqAntiL = dynamic_cast<THnSparse*>(f->Get("antid-lambda-ebye/nSqAntiL"));
-  auto nSqL = dynamic_cast<THnSparse*>(f->Get("antid-lambda-ebye/nSqL"));
-  auto nLAntiL = dynamic_cast<THnSparse*>(f->Get("antid-lambda-ebye/nLantiL"));
-  auto nLAntid = dynamic_cast<THnSparse*>(f->Get("antid-lambda-ebye/nLantid"));
-  auto nAntiLAntid = dynamic_cast<THnSparse*>(f->Get("antid-lambda-ebye/nAntiLantid"));
-  auto nAntipAntid = dynamic_cast<THnSparse*>(f->Get("antid-lambda-ebye/nAntipAntid"));
+  auto of = TFile::Open(Form("%s_%s", cutSet, fileIO::outFileName.data()), "recreate");
+  auto file_eff = TFile::Open(Form("efficiency__grid_%s.root", cutSet));
+  auto nEv = dynamic_cast<THnSparse*>(f->Get(Form("antid-lambda-ebye%s/nEv", cutSet)));
+  auto nAntid = dynamic_cast<THnSparse*>(f->Get(Form("antid-lambda-ebye%s/n%sAntid",cutSet, genRec)));
+  auto nAntip = dynamic_cast<THnSparse*>(f->Get(Form("antid-lambda-ebye%s/n%sAntip",cutSet, genRec)));
+  auto nAntiL = dynamic_cast<THnSparse*>(f->Get(Form("antid-lambda-ebye%s/n%sAntiL",cutSet, genRec)));
+  auto nL = dynamic_cast<THnSparse*>(f->Get(Form("antid-lambda-ebye%s/n%sL",cutSet, genRec)));
+  auto nSqAntid = dynamic_cast<THnSparse*>(f->Get(Form("antid-lambda-ebye%s/n%sSqAntid",cutSet, genRec)));
+  auto nSqAntip = dynamic_cast<THnSparse*>(f->Get(Form("antid-lambda-ebye%s/n%sSqAntip",cutSet, genRec)));
+  auto nSqAntiL = dynamic_cast<THnSparse*>(f->Get(Form("antid-lambda-ebye%s/n%sSqAntiL",cutSet, genRec)));
+  auto nSqL = dynamic_cast<THnSparse*>(f->Get(Form("antid-lambda-ebye%s/n%sSqL",cutSet, genRec)));
+  auto nLAntiL = dynamic_cast<THnSparse*>(f->Get(Form("antid-lambda-ebye%s/n%sLantiL",cutSet, genRec)));
+  auto nLAntid = dynamic_cast<THnSparse*>(f->Get(Form("antid-lambda-ebye%s/n%sLantid",cutSet, genRec)));
+  auto nAntiLAntid = dynamic_cast<THnSparse*>(f->Get(Form("antid-lambda-ebye%s/n%sAntiLantid",cutSet, genRec)));
+  auto nAntipAntid = dynamic_cast<THnSparse*>(f->Get(Form("antid-lambda-ebye%s/n%sAntipAntid",cutSet, genRec)));
 
   auto nSubsamples = nAntid->GetAxis(0)->GetNbins();
 
@@ -83,6 +88,7 @@ void RawCorrelation(){
   TH1D *hAntiL_k2 = new TH1D("hAntiL_k2", ";Centrality (%);#kappa_{2}(#bar{#Lambda})", bins::bins[1], bins::xmin[1], bins::xmax[1]);
 
   TH1D *hNetL_k2k1 = new TH1D("hNetL_k2k1", ";Centrality (%);#kappa_{2}/#kappa_{1}(#Delta#Lambda)", bins::bins[1], bins::xmin[1], bins::xmax[1]);
+  TH1D *hNetL_k2 = new TH1D("hNetL_k2", ";Centrality (%);#kappa_{2}", bins::bins[1], bins::xmin[1], bins::xmax[1]);
   TH1D *hAntidNetL = new TH1D("hAntidNetL", ";Centrality (%);#rho_{#bar{d}#Delta#Lambda}", bins::bins[1], bins::xmin[1], bins::xmax[1]);
   TH1D *hLantid = new TH1D("hLantid", ";Centrality (%);#rho_{#bar{d}#Lambda}", bins::bins[1], bins::xmin[1], bins::xmax[1]);
   TH1D *hAntiLantid = new TH1D("hAntiLantid", ";Centrality (%);#rho_{#bar{d}#bar{#Lambda}}", bins::bins[1], bins::xmin[1], bins::xmax[1]);
@@ -110,6 +116,7 @@ void RawCorrelation(){
   THnSparseD hnAntiL_k2("hnAntiL_k2", ";Subsample;Centrality (%);#Delta#eta;", 3, bins::bins, bins::xmin, bins::xmax);
 
   THnSparseD hnNetL("hNetL", ";Subsample;Centrality (%);#Delta#eta;", 3, bins::bins, bins::xmin, bins::xmax);
+  THnSparseD hnNetL_k2("hNetL_k2", ";Subsample;Centrality (%);#Delta#eta;", 3, bins::bins, bins::xmin, bins::xmax);
   THnSparseD hnLantid("hLantid", ";Subsample;Centrality (%);#Delta#eta;", 3, bins::bins, bins::xmin, bins::xmax);
   THnSparseD hnAntidNetL("hAntidNetL", ";Subsample;Centrality (%);#Delta#eta;", 3, bins::bins, bins::xmin, bins::xmax);
   THnSparseD hnAntiLantid("hAntiLantid", ";Subsample;Centrality (%);#Delta#eta;", 3, bins::bins, bins::xmin, bins::xmax);
@@ -126,12 +133,14 @@ void RawCorrelation(){
     setAxisRanges(nEv, {iSsmallMin}, {iSsmallMax});
     proj_nev = dynamic_cast<TH1D*>(nEv->Projection(1));
     std::cout << " --- S U B S A M P L E    N . " << iS << " --- \n";
-    for (int iC{1}; iC < bins::bins[1] + 1; ++iC) {
-      auto effd = (TH1D*)file_effd->Get(Form("eff_%d", iC / 10 + 1));
+    for (int iC{1}; iC < bins::bins[1] - 1; ++iC) {
+      auto effd = (TH1D*)file_eff->Get(Form("effD_%d", iC));
       effd->SetName("effd");
-      auto effL = (TH1D*)file_effL->Get(Form("eff_%d", iC / 10 + 1));
+      auto effL = (TH1D*)file_eff->Get(Form("effL_%d", iC));
       effL->SetName("effL");
-      auto effp = (TH1D*)file_effp->Get(Form("eff_%d", iC / 10 + 1));
+      auto effAntiL = (TH1D*)file_eff->Get(Form("effAntiL_%d", iC));
+      effAntiL->SetName("effAntiL");
+      auto effp = (TH1D*)file_eff->Get(Form("effP_%d", iC));
       effp->SetName("effp");
       int iCsmallMin = nEv->GetAxis(1)->FindBin(hAntid_k1->GetXaxis()->GetBinLowEdge(iC) + constants::epsilon);
       int iCsmallMax = nEv->GetAxis(1)->FindBin(hAntid_k1->GetXaxis()->GetBinUpEdge(iC) - constants::epsilon);
@@ -140,6 +149,7 @@ void RawCorrelation(){
       std::cout << "Processing centrality " << iC << ", (iCsmallMin, iCsmallMax) = (" << iCsmallMin << ", " << iCsmallMax << ")" << "...\n";
       for (int iE{1}; iE < bins::bins[2] + 1; ++iE) {
 
+        int idx[]{iS, iC, iE};
         // Centrality bin width correction (CBWC)
         double k1_L = 0.;
         double k2_L = 0.;
@@ -159,18 +169,18 @@ void RawCorrelation(){
           std::cout << "nev_small = " << nev << "\n";
 
           // select axis ranges
-          setAxisRanges(nAntid, {iSsmallMin, iC_small, 4}, {iSsmallMax, iC_small, 4});
-          setAxisRanges(nAntip, {iSsmallMin, iC_small, 4}, {iSsmallMax, iC_small, 4});
-          setAxisRanges(nAntiL, {iSsmallMin, iC_small, 4}, {iSsmallMax, iC_small, 4});
-          setAxisRanges(nL, {iSsmallMin, iC_small, 4}, {iSsmallMax, iC_small, 4});
-          setAxisRanges(nSqAntid, {iSsmallMin, iC_small, 4}, {iSsmallMax, iC_small, 4});
-          setAxisRanges(nSqAntip, {iSsmallMin, iC_small, 4}, {iSsmallMax, iC_small, 4});
-          setAxisRanges(nSqAntiL, {iSsmallMin, iC_small, 4}, {iSsmallMax, iC_small, 4});
-          setAxisRanges(nSqL, {iSsmallMin, iC_small, 4}, {iSsmallMax, iC_small, 4});
-          setAxisRanges(nLAntiL, {iSsmallMin, iC_small, 4}, {iSsmallMax, iC_small, 4});
-          setAxisRanges(nLAntid, {iSsmallMin, iC_small, 4}, {iSsmallMax, iC_small, 4});
-          setAxisRanges(nAntiLAntid, {iSsmallMin, iC_small, 4}, {iSsmallMax, iC_small, 4});
-          setAxisRanges(nAntipAntid, {iSsmallMin, iC_small, 4}, {iSsmallMax, iC_small, 4});
+          setAxisRanges(nAntid, {iSsmallMin, iC_small, 1}, {iSsmallMax, iC_small, 1});
+          setAxisRanges(nAntip, {iSsmallMin, iC_small, 1}, {iSsmallMax, iC_small, 1});
+          setAxisRanges(nAntiL, {iSsmallMin, iC_small, 1}, {iSsmallMax, iC_small, 1});
+          setAxisRanges(nL, {iSsmallMin, iC_small, 1}, {iSsmallMax, iC_small, 1});
+          setAxisRanges(nSqAntid, {iSsmallMin, iC_small, 1}, {iSsmallMax, iC_small, 1});
+          setAxisRanges(nSqAntip, {iSsmallMin, iC_small, 1}, {iSsmallMax, iC_small, 1});
+          setAxisRanges(nSqAntiL, {iSsmallMin, iC_small, 1}, {iSsmallMax, iC_small, 1});
+          setAxisRanges(nSqL, {iSsmallMin, iC_small, 1}, {iSsmallMax, iC_small, 1});
+          setAxisRanges(nLAntiL, {iSsmallMin, iC_small, 1}, {iSsmallMax, iC_small, 1});
+          setAxisRanges(nLAntid, {iSsmallMin, iC_small, 1}, {iSsmallMax, iC_small, 1});
+          setAxisRanges(nAntiLAntid, {iSsmallMin, iC_small, 1}, {iSsmallMax, iC_small, 1});
+          setAxisRanges(nAntipAntid, {iSsmallMin, iC_small, 1}, {iSsmallMax, iC_small, 1});
 
           double sum_antip = 0.;
           double sum_antip_2 = 0.;
@@ -207,17 +217,17 @@ void RawCorrelation(){
             double n_L = proj_L->GetBinContent(iPL);
             double n_antiL = proj_antiL->GetBinContent(iPL);
             double effL_pt = kApplyEffCorrection ? effL->GetBinContent(iPL) : 1.;
-            double effAntiL_pt = kApplyEffCorrection ? effL->GetBinContent(iPL) : 1.; // TODO: apply charge-conjugate efficiencies
+            double effAntiL_pt = kApplyEffCorrection ? effAntiL->GetBinContent(iPL) : 1.; // TODO: apply charge-conjugate efficiencies
             sum_L += (n_L / effL_pt);
             std::cout << n_L / effL_pt << std::endl;
             sum_antiL += (n_antiL / effAntiL_pt);
             sum_L_2 += (n_L / std::pow(effL_pt, 2.));
-            sum_antiL_2 += (n_antiL / std::pow(effL_pt, 2.));
+            sum_antiL_2 += (n_antiL / std::pow(effAntiL_pt, 2.));
             for (int iPL2{1}; iPL2 < proj_antiL->GetNbinsX() + 1; ++iPL2) { // loop over pT bins (lambda, 2)
               double nsq_L = proj_sqL->GetBinContent(iPL, iPL2);
               double nsq_antiL = proj_sqAntiL->GetBinContent(iPL, iPL2);
               double effL_pt2 = kApplyEffCorrection ? effL->GetBinContent(iPL2) : 1.; // TODO: apply charge-conjugate efficiencies
-              double effAntiL_pt2 = kApplyEffCorrection ? effL->GetBinContent(iPL2) : 1.; // TODO: apply charge-conjugate efficiencies
+              double effAntiL_pt2 = kApplyEffCorrection ? effAntiL->GetBinContent(iPL2) : 1.; // TODO: apply charge-conjugate efficiencies
               double n_LantiL = proj_LantiL->GetBinContent(iPL, iPL2);
               sumSq_L += (nsq_L / effL_pt / effL_pt2);
               sumSq_antiL += (nsq_antiL / effAntiL_pt / effAntiL_pt2);
@@ -313,123 +323,131 @@ void RawCorrelation(){
           // std::cout << "k11_antipAntid = " << k11_antipAntid << std::endl;
 
           // lambda
-          hnL_k2.SetBinContent((int[]){iS, iC, iE}, k2_L);
-          hnL_k1.SetBinContent((int[]){iS, iC, iE}, k1_L);
+          hnL_k2.SetBinContent(idx, k2_L);
+          hnL_k1.SetBinContent(idx, k1_L);
           if (k1_L > 0) {
-            hnL_k2k1.SetBinContent((int[]){iS, iC, iE}, k2_L / k1_L);
-            hnL_k2k1check.SetBinContent((int[]){iS, iC, iE}, (k2_L - k1_L) / std::pow(k1_L, 2.));
+            hnL_k2k1.SetBinContent(idx, k2_L / k1_L);
+            hnL_k2k1check.SetBinContent(idx, (k2_L - k1_L) / std::pow(k1_L, 2.));
           }
           else {
-            hnL_k2k1.SetBinContent((int[]){iS, iC, iE}, 0.);
-            hnL_k2k1check.SetBinContent((int[]){iS, iC, iE}, 0.);
+            hnL_k2k1.SetBinContent(idx, 0.);
+            hnL_k2k1check.SetBinContent(idx, 0.);
           }
 
           // anti-lambda
-          hnAntiL_k2.SetBinContent((int[]){iS, iC, iE}, k2_antiL);
-          hnAntiL_k1.SetBinContent((int[]){iS, iC, iE}, k1_antiL);
+          hnAntiL_k2.SetBinContent(idx, k2_antiL);
+          hnAntiL_k1.SetBinContent(idx, k1_antiL);
           if (k1_antiL > 0) {
-            hnAntiL_k2k1.SetBinContent((int[]){iS, iC, iE}, k2_antiL / k1_antiL);
-            hnAntiL_k2k1check.SetBinContent((int[]){iS, iC, iE}, (k2_antiL - k1_antiL) / std::pow(k1_antiL, 2.));
+            hnAntiL_k2k1.SetBinContent(idx, k2_antiL / k1_antiL);
+            hnAntiL_k2k1check.SetBinContent(idx, (k2_antiL - k1_antiL) / std::pow(k1_antiL, 2.));
           }
           else {
-            hnAntiL_k2k1.SetBinContent((int[]){iS, iC, iE}, 0.);
-            hnAntiL_k2k1check.SetBinContent((int[]){iS, iC, iE}, 0.);
+            hnAntiL_k2k1.SetBinContent(idx, 0.);
+            hnAntiL_k2k1check.SetBinContent(idx, 0.);
           }
 
           // anti-proton
-          hnAntip_k2.SetBinContent((int[]){iS, iC, iE}, k2_antip);
-          hnAntip_k1.SetBinContent((int[]){iS, iC, iE}, k1_antip);
+          hnAntip_k2.SetBinContent(idx, k2_antip);
+          hnAntip_k1.SetBinContent(idx, k1_antip);
           if (k1_antip > 0) {
-            hnAntip_k2k1.SetBinContent((int[]){iS, iC, iE}, k2_antip / k1_antip);
-            hnAntip_k2k1check.SetBinContent((int[]){iS, iC, iE}, (k2_antip - k1_antip) / std::pow(k1_antip, 2.));
+            hnAntip_k2k1.SetBinContent(idx, k2_antip / k1_antip);
+            hnAntip_k2k1check.SetBinContent(idx, (k2_antip - k1_antip) / std::pow(k1_antip, 2.));
           }
           else {
-            hnAntip_k2k1.SetBinContent((int[]){iS, iC, iE}, 0.);
-            hnAntip_k2k1check.SetBinContent((int[]){iS, iC, iE}, 0.);
+            hnAntip_k2k1.SetBinContent(idx, 0.);
+            hnAntip_k2k1check.SetBinContent(idx, 0.);
           }
 
           // anti-deuteron
-          hnAntid_k2.SetBinContent((int[]){iS, iC, iE}, k2_antid);
-          hnAntid_k1.SetBinContent((int[]){iS, iC, iE}, k1_antid);
+          hnAntid_k2.SetBinContent(idx, k2_antid);
+          hnAntid_k1.SetBinContent(idx, k1_antid);
           if (k1_antid > 0) {
-            hnAntid_k2k1.SetBinContent((int[]){iS, iC, iE}, k2_antid / k1_antid);
-            hnAntid_k2k1check.SetBinContent((int[]){iS, iC, iE}, (k2_antid - k1_antid) / std::pow(k1_antid, 2.));
+            hnAntid_k2k1.SetBinContent(idx, k2_antid / k1_antid);
+            hnAntid_k2k1check.SetBinContent(idx, (k2_antid - k1_antid) / std::pow(k1_antid, 2.));
           }
           else {
-            hnAntid_k2k1.SetBinContent((int[]){iS, iC, iE}, 0.);
-            hnAntid_k2k1check.SetBinContent((int[]){iS, iC, iE}, 0.);
+            hnAntid_k2k1.SetBinContent(idx, 0.);
+            hnAntid_k2k1check.SetBinContent(idx, 0.);
           }
 
           // net-lambda
           auto k2_netL = k2_L + k2_antiL - 2 * (k11_LantiL);
           if (k1_L + k1_antiL > 1.e-5) {
-            hnNetL.SetBinContent((int[]){iS, iC, iE}, ( k2_netL ) / (k1_L + k1_antiL));
+            hnNetL.SetBinContent(idx, ( k2_netL ) / (k1_L + k1_antiL));
           }
           else {
-            hnNetL.SetBinContent((int[]){iS, iC, iE}, 0.);
+            hnNetL.SetBinContent(idx, 0.);
+          }
+
+          if (k1_L + k1_antiL > 1.e-5) {
+            hnNetL_k2.SetBinContent(idx, k2_netL);
+          }
+          else {
+            hnNetL_k2.SetBinContent(idx, 0.);
           }
 
           // net-lambda - deuteron
           if (k2_netL * k2_antid > 1.e-5) {
-            hnAntidNetL.SetBinContent((int[]){iS, iC, iE}, ( k11_Lantid - k11_antiLantid ) / std::sqrt( k2_antid * k2_netL ));
+            hnAntidNetL.SetBinContent(idx, ( k11_Lantid - k11_antiLantid ) / std::sqrt( k2_antid * k2_netL ));
           }
           else {
-            hnAntidNetL.SetBinContent((int[]){iS, iC, iE}, 0.);
+            hnAntidNetL.SetBinContent(idx, 0.);
           }
 
           // Lambda-antideuteron
           if (k2_L * k2_antid > 0.) {
-            hnLantid.SetBinContent((int[]){iS, iC, iE}, ( k11_Lantid ) / std::sqrt( k2_L * k2_antid ));
+            hnLantid.SetBinContent(idx, ( k11_Lantid ) / std::sqrt( k2_L * k2_antid ));
             // std::cout << "L-antid" << ( k11_Lantid - k1_L * k1_antid ) / std::sqrt( k2_L * k2_antid ) << std::endl;
           }
           else {
-            hnLantid.SetBinContent((int[]){iS, iC, iE}, 0.);
+            hnLantid.SetBinContent(idx, 0.);
           }
 
           // antiLambda-antideuteron
           if (k2_antiL * k2_antid > 0.) {
-            hnAntiLantid.SetBinContent((int[]){iS, iC, iE}, ( k11_antiLantid ) / std::sqrt( k2_antiL * k2_antid ));
+            hnAntiLantid.SetBinContent(idx, ( k11_antiLantid ) / std::sqrt( k2_antiL * k2_antid ));
             // std::cout << "antiL-antid" << ( k11_antiLantid - k1_antiL * k1_antid ) / std::sqrt( k2_antiL * k2_antid ) << std::endl;
           }
           else {
-            hnAntiLantid.SetBinContent((int[]){iS, iC, iE}, 0.);
+            hnAntiLantid.SetBinContent(idx, 0.);
           }
 
           // antiproton-antideuteron
           if (k2_antip * k2_antid > 1.e-9) {
-            hnAntipAntid.SetBinContent((int[]){iS, iC, iE}, ( k11_antipAntid ) / std::sqrt( k2_antid * k2_antip ));
+            hnAntipAntid.SetBinContent(idx, ( k11_antipAntid ) / std::sqrt( k2_antid * k2_antip ));
             // std::cout << "antip-antid" << ( k11_antipAntid - k1_antip * k1_antid ) / std::sqrt( k2_antid * k2_antip ) << std::endl;
           }
           else {
-            hnAntipAntid.SetBinContent((int[]){iS, iC, iE}, 0.);
+            hnAntipAntid.SetBinContent(idx, 0.);
           }
         }
         else {
-          hnL_k2k1.SetBinContent((int[]){iS, iC, iE}, 0.);
-          hnL_k2k1check.SetBinContent((int[]){iS, iC, iE}, 0.);
-          hnL_k1.SetBinContent((int[]){iS, iC, iE}, 0.);
-          hnL_k2.SetBinContent((int[]){iS, iC, iE}, 0.);
+          hnL_k2k1.SetBinContent(idx, 0.);
+          hnL_k2k1check.SetBinContent(idx, 0.);
+          hnL_k1.SetBinContent(idx, 0.);
+          hnL_k2.SetBinContent(idx, 0.);
 
-          hnAntiL_k2k1.SetBinContent((int[]){iS, iC, iE}, 0.);
-          hnAntiL_k2k1check.SetBinContent((int[]){iS, iC, iE}, 0.);
-          hnAntiL_k1.SetBinContent((int[]){iS, iC, iE}, 0.);
-          hnAntiL_k2.SetBinContent((int[]){iS, iC, iE}, 0.);
+          hnAntiL_k2k1.SetBinContent(idx, 0.);
+          hnAntiL_k2k1check.SetBinContent(idx, 0.);
+          hnAntiL_k1.SetBinContent(idx, 0.);
+          hnAntiL_k2.SetBinContent(idx, 0.);
 
-          hnAntip_k2k1.SetBinContent((int[]){iS, iC, iE}, 0.);
-          hnAntip_k2k1check.SetBinContent((int[]){iS, iC, iE}, 0.);
-          hnAntip_k1.SetBinContent((int[]){iS, iC, iE}, 0.);
-          hnAntip_k2.SetBinContent((int[]){iS, iC, iE}, 0.);
+          hnAntip_k2k1.SetBinContent(idx, 0.);
+          hnAntip_k2k1check.SetBinContent(idx, 0.);
+          hnAntip_k1.SetBinContent(idx, 0.);
+          hnAntip_k2.SetBinContent(idx, 0.);
 
-          hnAntid_k2k1.SetBinContent((int[]){iS, iC, iE}, 0.);
-          hnAntid_k2k1check.SetBinContent((int[]){iS, iC, iE}, 0.);
-          hnAntid_k1.SetBinContent((int[]){iS, iC, iE}, 0.);
-          hnAntid_k2.SetBinContent((int[]){iS, iC, iE}, 0.);
+          hnAntid_k2k1.SetBinContent(idx, 0.);
+          hnAntid_k2k1check.SetBinContent(idx, 0.);
+          hnAntid_k1.SetBinContent(idx, 0.);
+          hnAntid_k2.SetBinContent(idx, 0.);
 
-          hnNetL.SetBinContent((int[]){iS, iC, iE}, 0.);
-          hnAntidNetL.SetBinContent((int[]){iS, iC, iE}, 0.);
-          hnLantid.SetBinContent((int[]){iS, iC, iE}, 0.);
-          hnAntiLantid.SetBinContent((int[]){iS, iC, iE}, 0.);
-          hnAntipAntid.SetBinContent((int[]){iS, iC, iE}, 0.);
+          hnNetL.SetBinContent(idx, 0.);
+          hnNetL_k2.SetBinContent(idx, 0.);
+          hnAntidNetL.SetBinContent(idx, 0.);
+          hnLantid.SetBinContent(idx, 0.);
+          hnAntiLantid.SetBinContent(idx, 0.);
+          hnAntipAntid.SetBinContent(idx, 0.);
         }
       }
     }
@@ -455,6 +473,7 @@ void RawCorrelation(){
   subsample(&hnAntid_k1, hAntid_k1);
   subsample(&hnAntid_k2, hAntid_k2);
   subsample(&hnNetL, hNetL_k2k1);
+  subsample(&hnNetL_k2, hNetL_k2);
   subsample(&hnAntidNetL, hAntidNetL);
   subsample(&hnLantid, hLantid);
   subsample(&hnAntiLantid, hAntiLantid);
@@ -478,6 +497,7 @@ void RawCorrelation(){
   hAntid_k1->Write();
   hAntid_k2->Write();
   hNetL_k2k1->Write();
+  hNetL_k2->Write();
   hAntidNetL->Write();
   hLantid->Write();
   hAntiLantid->Write();

@@ -6,10 +6,10 @@ void SetOptCanv(TCanvas &cc){
   cc.SetTopMargin(0.05);
 }
 
-constexpr const char* period = "15o";
+constexpr const char* period = "23zzhpass3";
 
 void Plot(){
-  TFile* f = TFile::Open(Form("out_run2_LHC%s_20240420_noEff.root", period));
+  TFile* f = TFile::Open(Form("_out_run2_LHC%s.root", period));
   gStyle->SetOptStat(0);
 
   // correlations
