@@ -1,4 +1,4 @@
-for i in $(seq 1 10);
+for i in $(seq 0 16);
 do
 root -b -l <<EOF
 .L TestEfficiency.cxx+

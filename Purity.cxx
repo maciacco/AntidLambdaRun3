@@ -36,11 +36,11 @@ int colors[] = {TColor::GetColor("#ff3300"), TColor::GetColor("#ec6e0a"), TColor
 void Purity()
 {
   gStyle->SetOptStat(0);
-  auto _file0 = TFile::Open("./AnalysisResultsLHC15oGridJob.root");
+  auto _file0 = TFile::Open("./AnalysisResultsLHC18qrSysHyperloop2.root");
   auto fileOut = TFile::Open("purity.root", "recreate");
   if (kLambda)
   {
-    auto hMass = (TH3F *)_file0->Get("antid-lambda-ebye/QA/massLambda");
+    auto hMass = (TH3F *)_file0->Get("antid-lambda-ebye_mass1/QA/massLambda");
     hMass->RebinX(10);
     hMass->RebinY(2);
     hMass->RebinZ(2);
