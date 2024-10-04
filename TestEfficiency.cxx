@@ -21,10 +21,11 @@ void TestEfficiency(const int cut = 0){
   // auto hSpRecM = (THnSparse*)_file1->Get(Form("antid-lambda-ebye%s/nL", cutSet));
   // auto hSpGen = (THnSparse*)_file1->Get(Form("antid-lambda-ebye%s/nGenAntiL", cutSet));
   // auto hSpGenM = (THnSparse*)_file1->Get(Form("antid-lambda-ebye%s/nGenL", cutSet));
-  auto hRec = (TH3F*)_file1->Get(Form("antid-lambda-ebye%s/recAntiL", cutSet));
-  auto hRecM = (TH3F*)_file1->Get(Form("antid-lambda-ebye%s/recL", cutSet));
-  auto hGen = (TH3F*)_file1->Get(Form("antid-lambda-ebye%s/genAntiL", cutSet));
-  auto hGenM = (TH3F*)_file1->Get(Form("antid-lambda-ebye%s/genL", cutSet));
+
+  auto hRec = (TH3F*)_file1->Get(Form("nuclei-ebye%s/recAntiL", cutSet));
+  auto hRecM = (TH3F*)_file1->Get(Form("nuclei-ebye%s/recL", cutSet));
+  auto hGen = (TH3F*)_file1->Get(Form("nuclei-ebye%s/genAntiL", cutSet));
+  auto hGenM = (TH3F*)_file1->Get(Form("nuclei-ebye%s/genL", cutSet));
   // hRec->Add(hRecM);
   // hGen->Add(hGenM);
   TH1F *projNum[9]{nullptr};
@@ -34,8 +35,8 @@ void TestEfficiency(const int cut = 0){
   lL.SetTextFont(44);
   lL.SetTextSize(23);
   TCanvas cL("cL", "cL", 600, 700);
-  int centBins[1][2]{{0, 80}}; //{{0, 10}, {10, 20}, {20, 30}, {30, 40}, {40, 50}, {50, 60}, {60, 70}, {70, 80}, {0, 90}};//{{0, 20}, {0, 20}, {20, 50}, {20, 50}, {20, 50}, {50, 90}, {50, 90}, {50, 90}, {50, 90}};
-  for (int iC{1}; iC <= 1; ++iC) {
+  int centBins[][2]{/* {0, 80}}; */ {0, 10}, {10, 20}, {20, 30}, {30, 40}, {40, 50}, {50, 60}, {60, 70}, {70, 80}, {0, 90}};//{{0, 20}, {0, 20}, {20, 50}, {20, 50}, {20, 50}, {50, 90}, {50, 90}, {50, 90}, {50, 90}};
+  for (int iC{1}; iC <= 8; ++iC) {
     // hSpRecM->GetAxis(1)->SetRange(centBins[iC - 1][0] + 1, centBins[iC - 1][1]);
     // hSpGenM->GetAxis(1)->SetRange(centBins[iC - 1][0] + 1, centBins[iC - 1][1]);
     // projNum[iC - 1] = (TH1F*)hSpRecM->Projection(3);
@@ -77,7 +78,7 @@ void TestEfficiency(const int cut = 0){
   lAntiL.SetTextFont(44);
   lAntiL.SetTextSize(23);
   TCanvas cAntiL("cAntiL", "cAntiL", 600, 700);
-  for (int iC{1}; iC <= 1; ++iC) {
+  for (int iC{1}; iC <= 8; ++iC) {
     // hSpRec->GetAxis(1)->SetRange(centBins[iC - 1][0] + 1, centBins[iC - 1][1]);
     // hSpGen->GetAxis(1)->SetRange(centBins[iC - 1][0] + 1, centBins[iC - 1][1]);
     // projNum[iC - 1] = (TH1F*)hSpRec->Projection(3);
@@ -120,12 +121,12 @@ void TestEfficiency(const int cut = 0){
   lAntiD.SetTextFont(44);
   lAntiD.SetTextSize(23);
   TCanvas cAntiD("cAntiD", "cAntiD", 600, 700);
-  /* TH3F*  */hRec = (TH3F*)_file0->Get(Form("antid-lambda-ebye%s/recAntid", cutSet));
-  /* TH3F*  */hRecM = (TH3F*)_file0->Get(Form("antid-lambda-ebye%s/recD", cutSet));
-  /* TH3F*  */hGen = (TH3F*)_file0->Get(Form("antid-lambda-ebye%s/genAntid", cutSet));
-  /* TH3F*  */hGenM = (TH3F*)_file0->Get(Form("antid-lambda-ebye%s/genD", cutSet));
+  /* TH3F*  */hRec = (TH3F*)_file0->Get(Form("nuclei-ebye%s/recAntid", cutSet));
+  /* TH3F*  */hRecM = (TH3F*)_file0->Get(Form("nuclei-ebye%s/recD", cutSet));
+  /* TH3F*  */hGen = (TH3F*)_file0->Get(Form("nuclei-ebye%s/genAntid", cutSet));
+  /* TH3F*  */hGenM = (TH3F*)_file0->Get(Form("nuclei-ebye%s/genD", cutSet));
   //int centBins[10][2]{{0, 10}, {10, 20}, {20, 30}, {30, 40}, {40, 50}, {50, 60}, {60, 70}, {70, 80}, {0, 90}};//{{0, 20}, {0, 20}, {20, 40}, {20, 40}, {40, 60}, {40, 60}, {60, 80}, {60, 80}, {80, 90}};
-  for (int iC{1}; iC <= 1; ++iC) {
+  for (int iC{1}; iC <= 8; ++iC) {
     projNum[iC - 1] = (TH1F*)hRec->ProjectionY(Form("eff_%d", iC), centBins[iC - 1][0] + 1, centBins[iC - 1][1], 1, 1);
     TH1F projNumCpy(*projNum[iC - 1]);
     projNumCpy.SetName(Form("projNum_%d", iC));
@@ -159,12 +160,12 @@ void TestEfficiency(const int cut = 0){
   cAntiD.Print("cAntiD.pdf");
 
   // proton
-  hRec = (TH3F*)_file0->Get(Form("antid-lambda-ebye%s/recAntip", cutSet));
-  hRecM = (TH3F*)_file0->Get(Form("antid-lambda-ebye%s/recP", cutSet));
-  hGen = (TH3F*)_file0->Get(Form("antid-lambda-ebye%s/genAntip", cutSet));
-  hGenM = (TH3F*)_file0->Get(Form("antid-lambda-ebye%s/genP", cutSet));
+  hRec = (TH3F*)_file0->Get(Form("nuclei-ebye%s/recAntip", cutSet));
+  hRecM = (TH3F*)_file0->Get(Form("nuclei-ebye%s/recP", cutSet));
+  hGen = (TH3F*)_file0->Get(Form("nuclei-ebye%s/genAntip", cutSet));
+  hGenM = (TH3F*)_file0->Get(Form("nuclei-ebye%s/genP", cutSet));
   //int centBins[10][2]{{0, 10}, {10, 20}, {20, 30}, {30, 40}, {40, 50}, {50, 60}, {60, 70}, {70, 80}, {0, 90}}; //{{0, 20}, {0, 20}, {20, 40}, {20, 40}, {40, 60}, {40, 60}, {60, 80}, {60, 80}, {80, 90}};
-  for (int iC{1}; iC <= 1; ++iC) {
+  for (int iC{1}; iC <= 8; ++iC) {
     projNum[iC - 1] = (TH1F*)hRec->ProjectionY(Form("eff_%d", iC), centBins[iC - 1][0] + 1, centBins[iC - 1][1], 1, 1);
     TH1F projNumCpy(*projNum[iC - 1]);
     projNumCpy.SetName(Form("projNum_%d", iC));

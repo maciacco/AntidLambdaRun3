@@ -9,7 +9,7 @@
 
 #include "Constants.h"
 
-const double scale_eff = 0.95;
+const double scale_eff = 1.;
 
 void subsample(THnSparse *nPart, TH1D *hOut){
   TH1D* nPartVsCent = nullptr;
@@ -53,19 +53,32 @@ void RawCorrelation(const int cut = 0, const bool useRescaledMB = false){
   auto of = TFile::Open(Form("%s_%s", cutSet, fileIO::outFileName.data()), "recreate");
   auto file_eff = TFile::Open(Form("efficiency_%s_%s.root", period, cutSet));
   // auto file_eff_MB = TFile::Open("efficiencyMB2018.root");
-  auto nEv = dynamic_cast<THnSparse*>(f->Get(Form("antid-lambda-ebye%s/nEv", cutSet)));
-  auto nAntid = dynamic_cast<THnSparse*>(f->Get(Form("antid-lambda-ebye%s/n%sAntid",cutSet, genRec)));
-  auto nAntip = dynamic_cast<THnSparse*>(f->Get(Form("antid-lambda-ebye%s/n%sAntip",cutSet, genRec)));
-  auto nAntiL = dynamic_cast<THnSparse*>(f->Get(Form("antid-lambda-ebye%s/n%sAntiL",cutSet, genRec)));
-  auto nL = dynamic_cast<THnSparse*>(f->Get(Form("antid-lambda-ebye%s/n%sL",cutSet, genRec)));
-  auto nSqAntid = dynamic_cast<THnSparse*>(f->Get(Form("antid-lambda-ebye%s/n%sSqAntid",cutSet, genRec)));
-  auto nSqAntip = dynamic_cast<THnSparse*>(f->Get(Form("antid-lambda-ebye%s/n%sSqAntip",cutSet, genRec)));
-  auto nSqAntiL = dynamic_cast<THnSparse*>(f->Get(Form("antid-lambda-ebye%s/n%sSqAntiL",cutSet, genRec)));
-  auto nSqL = dynamic_cast<THnSparse*>(f->Get(Form("antid-lambda-ebye%s/n%sSqL",cutSet, genRec)));
-  auto nLAntiL = dynamic_cast<THnSparse*>(f->Get(Form("antid-lambda-ebye%s/n%sLantiL",cutSet, genRec)));
-  auto nLAntid = dynamic_cast<THnSparse*>(f->Get(Form("antid-lambda-ebye%s/n%sLantid",cutSet, genRec)));
-  auto nAntiLAntid = dynamic_cast<THnSparse*>(f->Get(Form("antid-lambda-ebye%s/n%sAntiLantid",cutSet, genRec)));
-  auto nAntipAntid = dynamic_cast<THnSparse*>(f->Get(Form("antid-lambda-ebye%s/n%sAntipAntid",cutSet, genRec)));
+  // auto nEv = dynamic_cast<THnSparse*>(f->Get(Form("antid-lambda-ebye%s/nEv", cutSet)));
+  // auto nAntid = dynamic_cast<THnSparse*>(f->Get(Form("antid-lambda-ebye%s/n%sAntid",cutSet, genRec)));
+  // auto nAntip = dynamic_cast<THnSparse*>(f->Get(Form("antid-lambda-ebye%s/n%sAntip",cutSet, genRec)));
+  // auto nAntiL = dynamic_cast<THnSparse*>(f->Get(Form("antid-lambda-ebye%s/n%sAntiL",cutSet, genRec)));
+  // auto nL = dynamic_cast<THnSparse*>(f->Get(Form("antid-lambda-ebye%s/n%sL",cutSet, genRec)));
+  // auto nSqAntid = dynamic_cast<THnSparse*>(f->Get(Form("antid-lambda-ebye%s/n%sSqAntid",cutSet, genRec)));
+  // auto nSqAntip = dynamic_cast<THnSparse*>(f->Get(Form("antid-lambda-ebye%s/n%sSqAntip",cutSet, genRec)));
+  // auto nSqAntiL = dynamic_cast<THnSparse*>(f->Get(Form("antid-lambda-ebye%s/n%sSqAntiL",cutSet, genRec)));
+  // auto nSqL = dynamic_cast<THnSparse*>(f->Get(Form("antid-lambda-ebye%s/n%sSqL",cutSet, genRec)));
+  // auto nLAntiL = dynamic_cast<THnSparse*>(f->Get(Form("antid-lambda-ebye%s/n%sLantiL",cutSet, genRec)));
+  // auto nLAntid = dynamic_cast<THnSparse*>(f->Get(Form("antid-lambda-ebye%s/n%sLantid",cutSet, genRec)));
+  // auto nAntiLAntid = dynamic_cast<THnSparse*>(f->Get(Form("antid-lambda-ebye%s/n%sAntiLantid",cutSet, genRec)));
+  // auto nAntipAntid = dynamic_cast<THnSparse*>(f->Get(Form("antid-lambda-ebye%s/n%sAntipAntid",cutSet, genRec)));
+  auto nEv = dynamic_cast<THnSparse*>(f->Get(Form("nuclei-ebye%s/nEv", cutSet)));
+  auto nAntid = dynamic_cast<THnSparse*>(f->Get(Form("nuclei-ebye%s/n%sAntid",cutSet, genRec)));
+  auto nAntip = dynamic_cast<THnSparse*>(f->Get(Form("nuclei-ebye%s/n%sAntip",cutSet, genRec)));
+  auto nAntiL = dynamic_cast<THnSparse*>(f->Get(Form("nuclei-ebye%s/n%sAntiL",cutSet, genRec)));
+  auto nL = dynamic_cast<THnSparse*>(f->Get(Form("nuclei-ebye%s/n%sL",cutSet, genRec)));
+  auto nSqAntid = dynamic_cast<THnSparse*>(f->Get(Form("nuclei-ebye%s/n%sSqAntid",cutSet, genRec)));
+  auto nSqAntip = dynamic_cast<THnSparse*>(f->Get(Form("nuclei-ebye%s/n%sSqAntip",cutSet, genRec)));
+  auto nSqAntiL = dynamic_cast<THnSparse*>(f->Get(Form("nuclei-ebye%s/n%sSqAntiL",cutSet, genRec)));
+  auto nSqL = dynamic_cast<THnSparse*>(f->Get(Form("nuclei-ebye%s/n%sSqL",cutSet, genRec)));
+  auto nLAntiL = dynamic_cast<THnSparse*>(f->Get(Form("nuclei-ebye%s/n%sLantiL",cutSet, genRec)));
+  auto nLAntid = dynamic_cast<THnSparse*>(f->Get(Form("nuclei-ebye%s/n%sLantid",cutSet, genRec)));
+  auto nAntiLAntid = dynamic_cast<THnSparse*>(f->Get(Form("nuclei-ebye%s/n%sAntiLantid",cutSet, genRec)));
+  auto nAntipAntid = dynamic_cast<THnSparse*>(f->Get(Form("nuclei-ebye%s/n%sAntipAntid",cutSet, genRec)));
 
   auto nSubsamples = nAntid->GetAxis(0)->GetNbins();
 

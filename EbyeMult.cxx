@@ -34,7 +34,7 @@ constexpr const char* ptLabel[]{"0.8 #leq #it{p}_{T} < 1.6 GeV/#it{c}", "0.6 #le
 
 void EbyeMult(){
   gStyle->SetOptStat(0);
-  auto _file0 = TFile::Open("AnalysisResultsLHC18qrSysHyperloop2.root");
+  auto _file0 = TFile::Open("AnalysisResultsLHC18qrSysHyperloop3.root");
   auto fileOut = TFile::Open("multiplicity.root", "recreate");
   TH2* hRec[3];
   hRec[0] = (TH2F *)_file0->Get("antid-lambda-ebye/QA/nRecPerEvAntid");
@@ -63,7 +63,7 @@ void EbyeMult(){
         //proj->Write();
         cc.cd();
         cc.SetLogy();
-        proj->Draw("pe");
+        proj->Draw("histoe");
         pois.Draw("same");
         TLatex txt;
         txt.SetNDC(true);
@@ -72,11 +72,12 @@ void EbyeMult(){
         txt.DrawLatex(0.55, 0.87, "Pb#minusPb, #sqrt{s_{NN}} = 5.02 TeV");
         txt.DrawLatex(0.55, 0.82, Form("Centrality %.f-%.f%%", hRec[iP]->GetXaxis()->GetBinLowEdge(iC), hRec[iP]->GetXaxis()->GetBinUpEdge(iC)));
         txt.DrawLatex(0.55, 0.77, "|#eta| < 0.8");
-        txt.DrawLatex(0.55, 0.72, PartLabel[iP]);
-        txt.DrawLatex(0.55, 0.67, ptLabel[iP]);
-        TLegend ll(0.6, 0.6, 0.8, 0.65);
+        // txt.DrawLatex(0.55, 0.72, PartLabel[iP]);
+        txt.DrawLatex(0.55, 0.72, ptLabel[iP]);
+        TLegend ll(0.6, 0.6, 0.8, 0.7);
         ll.SetTextFont(44);
         ll.SetTextSize(25);
+        ll.AddEntry(proj, PartLabel[iP], "pe");
         ll.AddEntry(&pois, "Poisson fit", "l");
         ll.Draw("same");
         cc.Write();
