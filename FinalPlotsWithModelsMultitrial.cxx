@@ -15,8 +15,8 @@ void FinalPlotsWithModelsMultitrial(){
   //TFile* f = TFile::Open(Form("_out_run2_LHC%s_grid_sys_hyperloop2.root", period));
   TFile* f16 = TFile::Open("out_full_analysis_antid_antip_highStats_ptL_1_4_16_2.root");
   TFile* f30 = TFile::Open("out_full_analysis_antid_antip_highStats_ptL_1_4_16_30_2.root");
-  TFile* fSys = TFile::Open("outSys_multitrial_test.root");
-  //TFile* fSysNetL = TFile::Open("outSys_newPtBins_netL.root");
+  TFile* fSys = TFile::Open("outSys_multitrial.root");
+  TFile* fSysNetL = TFile::Open("outSys_multitrial_netL.root");
 
   // antid-netL
   TH1D* hAntidNetL = (TH1D*)fSys->Get("hAntidNetL");
@@ -70,7 +70,7 @@ void FinalPlotsWithModelsMultitrial(){
   t.SetTextFont(44);
   t.SetTextSize(23);
   t.SetNDC();
-  t.DrawLatex(0.2, 0.35 + 0.55, "ALICE Preliminary, Pb#minusPb #sqrt{#it{s}_{NN}} = 5.02 TeV");
+  t.DrawLatex(0.2, 0.35 + 0.55, "ALICE, Pb#minusPb #sqrt{#it{s}_{NN}} = 5.02 TeV");
   t.DrawLatex(0.2, 0.29 + 0.55, "|#it{#eta}| < 0.8");
   t.DrawLatex(0.2, 0.23 + 0.55, "0.6 < #it{p}_{T}(#bar{d}) < 1.8 GeV/#it{c}");
   t.DrawLatex(0.2, 0.17 + 0.55, "1 < #it{p}_{T}(#Lambda) < 4 GeV/#it{c}");
@@ -89,71 +89,71 @@ void FinalPlotsWithModelsMultitrial(){
   chi2 = chi2Matrices(hAntidNetL, gSys, model_30_rho);
   std::cout << chi2 / 8. << std::endl;
   std::cout << "nSigma = " << ROOT::Math::normal_quantile_c(TMath::Prob(chi2, 8)/2., 1.) << std::endl;
-  cNetLantid.Print(Form("cNetLantidwModels_%s_modelsOnly_multitrial.pdf", period));
+  cNetLantid.Print(Form("cNetLantidwModels_%s_multitrial.pdf", period));
 
-  // // netL
-  // TH1D* hNetL = (TH1D*)f->Get("hNetL_k2k1");
-  // auto hCpyNetL(*hNetL);
-  // auto hsysNetL = (TH1D*)fSysNetL->Get("sysTot");
-  // TGraphErrors gSysNetL;
-  // for (int i{1}; i < 9; ++i) {
-  //   gSysNetL.AddPoint(hNetL->GetBinCenter(i), hNetL->GetBinContent(i));
-  //   gSysNetL.SetPointError(gSysNetL.GetN() - 1, 1., hsysNetL->GetBinContent(i));
-  // }
-  // gSysNetL.SetLineWidth(3);
-  // gSysNetL.SetFillStyle(0);
-  // gSysNetL.SetLineColor(kRed);
-  // hCpyNetL.Reset();
-  // hCpyNetL.GetYaxis()->SetTitle("#it{#kappa}_{2}(#Lambda - #bar{#Lambda}) / #it{#kappa}_{1}(#Lambda + #bar{#Lambda})");
-  // hCpyNetL.GetYaxis()->SetTitleOffset(1.6);
-  // hCpyNetL.GetYaxis()->SetRangeUser(0.82, 1.04);
-  // hCpyNetL.GetYaxis()->SetNdivisions(505);
-  // hCpyNetL.GetXaxis()->SetNdivisions(505);
-  // hCpyNetL.GetXaxis()->SetRangeUser(0., 80.);
-  // TGraphErrors* model_16_c2c1 = (TGraphErrors*)f16->Get("Grc2byc1xi");
-  // model_16_c2c1->SetName("model_16_c2c1");
-  // TGraphErrors* model_30_c2c1 = (TGraphErrors*)f30->Get("Grc2byc1xi");
-  // model_30_c2c1->SetName("model_30_c2c1");
-  // hNetL->SetLineWidth(3);
-  // hNetL->SetLineColor(kRed);
-  // hNetL->SetMarkerColor(kRed);
-  // hNetL->SetMarkerStyle(20);
-  // hNetL->SetMarkerSize(1.3);
-  // TCanvas cNetL("netL", "netL", 600, 600);
-  // SetOptCanv(cNetL);
-  // cNetL.cd();
-  // //hNetL->Fit("pol0");
-  // hCpyNetL.Draw();
-  // model_30_c2c1->SetFillColor(kOrange);
-  // model_16_c2c1->SetFillColor(kAzure + 7);
-  // model_30_c2c1->SetLineColor(kOrange);
-  // model_16_c2c1->SetLineColor(kAzure + 7);
-  // model_30_c2c1->SetLineWidth(2);
-  // model_16_c2c1->SetLineWidth(2);
-  // model_30_c2c1->Draw("le3same");
-  // model_16_c2c1->Draw("le3same");
-  // hNetL->Draw("pex0same");
-  // gSysNetL.Draw("e5same");
-  // TLatex tNetL;
-  // tNetL.SetTextFont(44);
-  // tNetL.SetTextSize(23);
-  // tNetL.SetNDC();
-  // t.DrawLatex(0.2, 0.35 + 0.55, "ALICE Preliminary, Pb#minusPb #sqrt{#it{s}_{NN}} = 5.02 TeV");
-  // t.DrawLatex(0.2, 0.29 + 0.55, "|#it{#eta}| < 0.8, 1 < #it{p}_{T} < 4 GeV/#it{c}");
-  // TLegend lNetL(0.2, 0.15, 0.8, 0.21);
-  // lNetL.SetNColumns(2);
-  // lNetL.SetColumnSeparation(0.2);
-  // lNetL.SetTextFont(44);
-  // lNetL.SetTextSize(23);
-  // t.DrawLatex(0.2, 0.25, "#splitline{Thermal-FIST CE SHM}{#it{T}_{ch}, #it{#gamma}_{s}, d#it{V}/d#it{y} from PRC 100 (2019) 054906}");
-  // lNetL.AddEntry(model_16_c2c1, "#it{V}_{c} = 1.6 d#it{V}/d#it{y}", "fl");
-  // lNetL.AddEntry(model_30_c2c1, "#it{V}_{c} = 3.0 d#it{V}/d#it{y}", "fl");
-  // lNetL.Draw("same");
-  // TLine lH(0., 1., 80., 1.);
-  // lH.SetLineStyle(kDashed);
-  // lH.SetLineColor(kBlack);
-  // lH.Draw("same");
-  // cNetL.Print(Form("cNetLwModels_%s.pdf", period));
+  // netL
+  TH1D* hNetL = (TH1D*)fSysNetL->Get("hNetL_k2k1");
+  auto hCpyNetL(*hNetL);
+  auto hsysNetL = (TH1D*)fSysNetL->Get("hout");
+  TGraphErrors gSysNetL;
+  for (int i{1}; i < 9; ++i) {
+    gSysNetL.AddPoint(hNetL->GetBinCenter(i), hNetL->GetBinContent(i));
+    gSysNetL.SetPointError(gSysNetL.GetN() - 1, 1., hsysNetL->GetBinContent(i));
+  }
+  gSysNetL.SetLineWidth(3);
+  gSysNetL.SetFillStyle(0);
+  gSysNetL.SetLineColor(kRed);
+  hCpyNetL.Reset();
+  hCpyNetL.GetYaxis()->SetTitle("#it{#kappa}_{2}(#Lambda - #bar{#Lambda}) / #it{#kappa}_{1}(#Lambda + #bar{#Lambda})");
+  hCpyNetL.GetYaxis()->SetTitleOffset(1.6);
+  hCpyNetL.GetYaxis()->SetRangeUser(0.82, 1.04);
+  hCpyNetL.GetYaxis()->SetNdivisions(505);
+  hCpyNetL.GetXaxis()->SetNdivisions(505);
+  hCpyNetL.GetXaxis()->SetRangeUser(0., 80.);
+  TGraphErrors* model_16_c2c1 = (TGraphErrors*)f16->Get("Grc2byc1xi");
+  model_16_c2c1->SetName("model_16_c2c1");
+  TGraphErrors* model_30_c2c1 = (TGraphErrors*)f30->Get("Grc2byc1xi");
+  model_30_c2c1->SetName("model_30_c2c1");
+  hNetL->SetLineWidth(3);
+  hNetL->SetLineColor(kRed);
+  hNetL->SetMarkerColor(kRed);
+  hNetL->SetMarkerStyle(20);
+  hNetL->SetMarkerSize(1.3);
+  TCanvas cNetL("netL", "netL", 600, 600);
+  SetOptCanv(cNetL);
+  cNetL.cd();
+  //hNetL->Fit("pol0");
+  hCpyNetL.Draw();
+  model_30_c2c1->SetFillColor(kOrange);
+  model_16_c2c1->SetFillColor(kAzure + 7);
+  model_30_c2c1->SetLineColor(kOrange);
+  model_16_c2c1->SetLineColor(kAzure + 7);
+  model_30_c2c1->SetLineWidth(2);
+  model_16_c2c1->SetLineWidth(2);
+  model_30_c2c1->Draw("le3same");
+  model_16_c2c1->Draw("le3same");
+  hNetL->Draw("pex0same");
+  gSysNetL.Draw("e5same");
+  TLatex tNetL;
+  tNetL.SetTextFont(44);
+  tNetL.SetTextSize(23);
+  tNetL.SetNDC();
+  t.DrawLatex(0.2, 0.35 + 0.55, "ALICE, Pb#minusPb #sqrt{#it{s}_{NN}} = 5.02 TeV");
+  t.DrawLatex(0.2, 0.29 + 0.55, "|#it{#eta}| < 0.8, 1 < #it{p}_{T} < 4 GeV/#it{c}");
+  TLegend lNetL(0.2, 0.15, 0.8, 0.21);
+  lNetL.SetNColumns(2);
+  lNetL.SetColumnSeparation(0.2);
+  lNetL.SetTextFont(44);
+  lNetL.SetTextSize(23);
+  t.DrawLatex(0.2, 0.25, "#splitline{Thermal-FIST CE SHM}{#it{T}_{ch}, #it{#gamma}_{s}, d#it{V}/d#it{y} from PRC 100 (2019) 054906}");
+  lNetL.AddEntry(model_16_c2c1, "#it{V}_{c} = 1.6 d#it{V}/d#it{y}", "fl");
+  lNetL.AddEntry(model_30_c2c1, "#it{V}_{c} = 3.0 d#it{V}/d#it{y}", "fl");
+  lNetL.Draw("same");
+  TLine lH(0., 1., 80., 1.);
+  lH.SetLineStyle(kDashed);
+  lH.SetLineColor(kBlack);
+  lH.Draw("same");
+  cNetL.Print(Form("cNetLwModels_%s_multitrial.pdf", period));
 }
 
 double chi2Matrices(TH1* const& hData, TGraphErrors* const& gSys, TGraphErrors* const& gModel, int size = 8){
@@ -169,7 +169,8 @@ double chi2Matrices(TH1* const& hData, TGraphErrors* const& gSys, TGraphErrors* 
   //fill correlated uncertainty matrix
   for (int iC{0}; iC < size; ++iC) {
     for (int iR{0}; iR < size; ++iR) {
-      covariance[iR][iC] += (2.904e-4 * 2.904e-4/* gSys->GetErrorY(iR) * gSys->GetErrorY(iC) */);
+      //if (iR != iC)
+        covariance[iR][iC] += (2.382e-4 * 2.382e-4);
     }
   }
 

@@ -14,7 +14,7 @@ void TestEfficiency(const int cut = 0){
   gStyle->SetOptStat(0);
   auto _file0 = TFile::Open(fileIO::inFileNameMC0.c_str());
   auto _file1 = TFile::Open(fileIO::inFileNameMC1.c_str());
-  auto fileOut = TFile::Open(Form("efficiency_%s_%s.root", period, cutSet), "recreate");
+  auto fileOut = TFile::Open(Form("efficiency_%s_multitrial_%s.root", period, cutSet), "recreate");
 
   // lambda
   // auto hSpRec = (THnSparse*)_file1->Get(Form("antid-lambda-ebye%s/nAntiL", cutSet));
@@ -35,7 +35,12 @@ void TestEfficiency(const int cut = 0){
   lL.SetTextFont(44);
   lL.SetTextSize(23);
   TCanvas cL("cL", "cL", 600, 700);
-  int centBins[][2]{/* {0, 80}}; */ {0, 10}, {10, 20}, {20, 30}, {30, 40}, {40, 50}, {50, 60}, {60, 70}, {70, 80}, {0, 90}};//{{0, 20}, {0, 20}, {20, 50}, {20, 50}, {20, 50}, {50, 90}, {50, 90}, {50, 90}, {50, 90}};
+  // already corrected
+  // int centBins_start[][2]{/* {0, 80}}; */ {0, 10}, {10, 20}, {20, 30}, {30, 40}, {40, 50}, {50, 60}, {60, 70}, {70, 80}, {0, 90}};//{{0, 20}, {0, 20}, {20, 50}, {20, 50}, {20, 50}, {50, 90}, {50, 90}, {50, 90}, {50, 90}};
+
+  // post corrected binning
+  int centBins[][2]{{0, 21}, {21, 30}, {30, 39}, {39, 39}, {49, 58}, {58, 67}, {67, 76}, {76, 85}, {0, 85}};
+
   for (int iC{1}; iC <= 8; ++iC) {
     // hSpRecM->GetAxis(1)->SetRange(centBins[iC - 1][0] + 1, centBins[iC - 1][1]);
     // hSpGenM->GetAxis(1)->SetRange(centBins[iC - 1][0] + 1, centBins[iC - 1][1]);

@@ -49,9 +49,9 @@ void setAxisRanges(THnSparse* h, std::initializer_list<int> const xmin, std::ini
 
 void RawCorrelation(const int cut = 0, const bool useRescaledMB = false){
   const char* cutSet = cutSets[cut];
-  auto f = TFile::Open(fileIO::inFileName.data());
+  auto f = TFile::Open((cut == 0) ? "data/AnalysisResultsMultitrial1_LHC18qr.root" : fileIO::inFileName.data());
   auto of = TFile::Open(Form("%s_%s", cutSet, fileIO::outFileName.data()), "recreate");
-  auto file_eff = TFile::Open(Form("efficiency_%s_%s.root", period, cutSet));
+  auto file_eff = TFile::Open(Form("efficiency_%s_multitrial_%s.root", period, cutSet));
   // auto file_eff_MB = TFile::Open("efficiencyMB2018.root");
   // auto nEv = dynamic_cast<THnSparse*>(f->Get(Form("antid-lambda-ebye%s/nEv", cutSet)));
   // auto nAntid = dynamic_cast<THnSparse*>(f->Get(Form("antid-lambda-ebye%s/n%sAntid",cutSet, genRec)));

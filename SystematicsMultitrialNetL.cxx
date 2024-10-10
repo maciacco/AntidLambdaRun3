@@ -9,7 +9,7 @@ const char* var[] = {"", "_sys01", "_sys02", "_sys03", "_sys04", "_sys05", "_sys
 bool combine = false;
 bool doBarlow = false;
 
-void SystematicsMultitrial(){
+void SystematicsMultitrialNetL(){
   gStyle->SetOptStat(0);
   TFile* files[51];
   TH1D* rho_tmp[51];
@@ -42,14 +42,14 @@ void SystematicsMultitrial(){
   legVar.SetTextSize(17);
   legVar.SetNColumns(3);
 
-  TFile out("outSys_multitrial.root", "recreate");
+  TFile out("outSys_multitrial_netL.root", "recreate");
   std::string outFile{"out_run2_Multitrial.root"};//"out_run2_LHC18qr_grid_sys_hyperloop2.root"};
 
   std::string outFile0{"out_run2_Multitrial.root"};//"out_run2_LHC18qr_grid_sys_hyperloop2.root"};
   TFile *files0 = TFile::Open(Form("_%s", outFile0.c_str()));
-  auto rho0 = (TH1D*)files0->Get("hAntidNetL");
+  auto rho0 = (TH1D*)files0->Get("hNetL_k2k1");
   auto k2k10 = (TH1D*)files0->Get("hNetL_k2k1");
-  rho0->SetName(Form("hAntidNetL%s", ""));
+  rho0->SetName(Form("hNetL_k2k1%s", ""));
   k2k10->SetName(Form("hNetL_k2k1%s", ""));
   TH1D *rhoCpy = new TH1D("rhoCpy", ";Centrality (%);#rho_{#bar{d}#Delta#Lambda}", 8, 0, 80);
   TH1D *k2k1Cpy = new TH1D("k2k1Cpy", ";Centrality (%);#kappa_{2}/#kappa_{1}(#Delta#Lambda)}", 8, 0, 80);
@@ -59,7 +59,7 @@ void SystematicsMultitrial(){
     k2k1Cpy->SetBinContent(i, k2k10->GetBinContent(i));
     k2k1Cpy->SetBinError(i, k2k10->GetBinError(i));
   }
-  rho0->GetYaxis()->SetRangeUser(-0.006, 0.01);
+  rho0->GetYaxis()->SetRangeUser(0.8, 1.2);
   rho0->GetXaxis()->SetRangeUser(0, 80);
   rho0->SetLineWidth(2);
   rho0->SetMarkerStyle(71);
@@ -74,15 +74,15 @@ void SystematicsMultitrial(){
     auto cutSet = cutSets[i+1];
     std::cout << cutSet << std::endl;
     files[i] = TFile::Open(Form("%s_%s", cutSet, outFile.c_str()));
-    rho[i] = (TH1D*)files[i]->Get("hAntidNetL");
+    rho[i] = (TH1D*)files[i]->Get("hNetL_k2k1");
     k2k1[i] = (TH1D*)files[i]->Get("hNetL_k2k1");
-    rho[i]->SetName(Form("hAntidNetL%s", cutSet));
+    rho[i]->SetName(Form("hNetL_k2k1%s", cutSet));
     k2k1[i]->SetName(Form("hNetL_k2k1%s", cutSet));
 
     out.cd();
     //rho[i]->Fit("pol0");
     cvar.cd();
-    rho[i]->GetYaxis()->SetRangeUser(-0.006, 0.01);
+    rho[i]->GetYaxis()->SetRangeUser(0.8, 1.2);
     rho[i]->GetXaxis()->SetRangeUser(0, 80);
     rho[i]->SetLineWidth(2);
     rho[i]->SetMarkerStyle(71);
@@ -105,7 +105,7 @@ void SystematicsMultitrial(){
     sq /= 8.;
     sq = std::sqrt((sq - std::pow(mean, 2.))/8.);
     std::cout << mean << " +/- " << sq << std::endl;
-    rhoRatio[i]->GetYaxis()->SetRangeUser(-0.006, 0.01);
+    rhoRatio[i]->GetYaxis()->SetRangeUser(0.8, 1.2);
     rhoRatio[i]->Fit("pol0", "Q");
     for (int iP{1}; iP < 9; ++iP) {
       rhoRatio[i]->SetBinContent(iP, (rhoRatio[i]->GetBinContent(iP)) - rhoRatio[i]->GetFunction("pol0")->GetParameter(0));
@@ -126,7 +126,7 @@ void SystematicsMultitrial(){
   std::cout << "correlated fraction = " << corr_frac << std::endl;
 
   for (int i{0}; i < 8; ++i) {
-    sys[i] = new TH1D(Form("hsys_%d", i), ";#rho_{#bar{d}#Delta#Lambda}^{var} - #rho_{#bar{d}#Delta#Lambda}^{default};Entries", 400, -0.01, 0.01);
+    sys[i] = new TH1D(Form("hsys_%d", i), ";Var;Entries", 400, -0.05, 0.05);
     for (int ii{0}; ii < 50; ++ii) {
       sys[i]->Fill(rhoRatio[ii]->GetBinContent(i + 1));
     }
